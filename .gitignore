@@ -1,0 +1,22 @@
+# Build output
+dist/
+
+# Astro
+.astro/
+
+# Dependencies
+node_modules/
+
+# Local environment (never commit; contains per-environment API URLs only)
+.env
+.env.*
+!.env.example
+
+# Tooling caches
+.cache/
+.preview/
+.eslintcache
+
+# OS / editor
+.DS_Store
+*.log

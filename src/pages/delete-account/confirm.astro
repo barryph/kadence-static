@@ -1,0 +1,146 @@
+---
+import Icon from '../../components/Icon.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/url';
+---
+
+<BaseLayout
+  title="Confirm account deletion | Kadence"
+  description="Confirm permanent deletion of your Kadence account. This action cannot be undone."
+  path="delete-account/confirm/"
+  noindex
+>
+  <div class="stack">
+    <section class="card" aria-labelledby="page-title">
+      <span class="badge">
+        <Icon name="shield" size={14} />
+        Official Kadence account page
+      </span>
+
+      <h1 id="page-title" style="margin-top: 1rem">
+        Confirm account deletion
+      </h1>
+
+      <!-- Default state: requires an explicit second action. The verification
+           token is read from the URL by JavaScript and is never rendered. -->
+      <div data-panel="confirm" style="margin-top: 1.25rem">
+        <p class="prose">
+          You are about to permanently delete your Kadence account and the data
+          associated with it.
+        </p>
+
+        <p class="notice notice--danger">
+          <Icon name="alert" size={18} />
+          <span>
+            <strong>This cannot be undone.</strong> Once your account is deleted
+            it cannot be recovered.
+          </span>
+        </p>
+
+        <div class="actions">
+          <button
+            class="button button--danger"
+            type="button"
+            data-role="confirm-delete"
+          >
+            <span class="spinner"></span>
+            <span data-role="confirm-label">Permanently delete account</span>
+          </button>
+          <a class="button button--ghost" href={withBase('delete-account/')}>
+            Cancel
+          </a>
+        </div>
+      </div>
+
+      <!-- Terminal success state. No claim is made about data the backend has
+           not explicitly confirmed as deleted. -->
+      <div class="status" data-panel="deleted" hidden style="margin-top: 1.25rem">
+        <span class="status__icon status__icon--success">
+          <Icon name="check" size={22} />
+        </span>
+        <h2 class="status__heading" data-panel-heading>Account deleted</h2>
+        <p class="prose">
+          Your Kadence account has been permanently deleted.
+        </p>
+        <p class="muted" style="margin-top: 0.75rem">
+          You can safely close this page.
+        </p>
+      </div>
+
+      <!-- Expired, invalid or already-used link. -->
+      <div
+        class="status"
+        data-panel="invalid-link"
+        hidden
+        style="margin-top: 1.25rem"
+      >
+        <span class="status__icon status__icon--warning">
+          <Icon name="alert" size={22} />
+        </span>
+        <h2 class="status__heading" data-panel-heading>
+          This link is no longer valid
+        </h2>
+        <p class="prose">
+          Verification links can only be used once and expire shortly after they
+          are sent. This link may have expired or already been used.
+        </p>
+        <div class="actions">
+          <a class="button button--primary" href={withBase('delete-account/')}>
+            Request a new deletion email
+          </a>
+        </div>
+      </div>
+
+      <!-- Transport failure only; the request can be retried safely. -->
+      <div class="status" data-panel="error" hidden style="margin-top: 1.25rem">
+        <span class="status__icon status__icon--error">
+          <Icon name="alert" size={22} />
+        </span>
+        <h2
+          class="status__heading"
+          data-panel-heading
+          data-role="error-heading"
+        >
+          Something went wrong
+        </h2>
+        <p class="prose" data-role="error-message">
+          We couldn&rsquo;t delete your account right now. Please try again.
+        </p>
+        <div class="actions">
+          <button
+            class="button button--primary"
+            type="button"
+            data-role="retry-confirm"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+
+      <noscript>
+        <p class="notice notice--danger" style="margin-top: 1.25rem">
+          <Icon name="alert" size={18} />
+          <span>
+            JavaScript is required to complete account deletion. Enable
+            JavaScript and reload this page.
+          </span>
+        </p>
+      </noscript>
+    </section>
+
+    <p class="muted">
+      For your security this link can only be used once. Kadence never asks for
+      your password to delete your account.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  import { resolveAccountDeletionApi } from '../../lib/api';
+  import { mountDeleteConfirm } from '../../lib/delete-confirm';
+
+  mountDeleteConfirm({
+    root: document,
+    api: resolveAccountDeletionApi(),
+  });
+</script>

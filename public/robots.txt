@@ -1,0 +1,6 @@
+# Kadence account management (static site)
+User-agent: *
+Allow: /
+
+# Token-bearing confirmation pages must never be indexed.
+Disallow: /delete-account/confirm/

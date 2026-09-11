@@ -1,0 +1,14 @@
+# pnpm settings for the Kadence account-deletion site.
+#
+# Since pnpm 11, non-auth settings live here rather than in .npmrc
+# (see https://pnpm.io/settings).
+#
+# pnpm blocks dependency build scripts by default. Astro's bundler (esbuild)
+# needs its install script to place the platform binary, so it is approved
+# explicitly rather than blanket-approving every dependency's scripts.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  unrs-resolver: false

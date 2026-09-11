@@ -1,0 +1,97 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# GITHUB_TOKEN scopes required by actions/deploy-pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two Pages deployments at once, but let an in-progress run finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit tests
+        run: pnpm run test
+
+      # Site URL and base path are derived from the repository by default, so
+      # a project site deploys correctly with no configuration at all.
+      # Override them with repository variables for a custom domain.
+      - name: Resolve build configuration
+        env:
+          VAR_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
+          VAR_SITE_URL: ${{ vars.SITE_URL }}
+          VAR_BASE_PATH: ${{ vars.BASE_PATH }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VAR_API_BASE_URL}" ]; then
+            echo "::error title=Missing PUBLIC_API_BASE_URL::Set the repository variable PUBLIC_API_BASE_URL (Settings -> Secrets and variables -> Actions -> Variables), for example https://api.kadence.app. A site built without it cannot submit deletion requests."
+            exit 1
+          fi
+
+          repo_name="${GITHUB_REPOSITORY##*/}"
+          site_url="${VAR_SITE_URL:-https://${GITHUB_REPOSITORY_OWNER}.github.io}"
+          base_path="${VAR_BASE_PATH:-/${repo_name}}"
+
+          {
+            echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
+            echo "SITE_URL=${site_url}"
+            echo "BASE_PATH=${base_path}"
+          } >> "$GITHUB_ENV"
+
+          echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
+          echo "SITE_URL=${site_url}"
+          echo "BASE_PATH=${base_path}"
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

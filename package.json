@@ -1,0 +1,33 @@
+{
+  "name": "kadence-static",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static account-management site for the Kadence mobile app (account deletion).",
+  "type": "module",
+  "packageManager": "pnpm@12.3.4",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "node scripts/e2e-smoke.mjs",
+    "mock-api": "node scripts/mock-api.mjs",
+    "og:image": "node scripts/generate-og-image.mjs",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@types/node": "^22.20.2",
+    "astro": "^7.3.2",
+    "jsdom": "^30.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  }
+}

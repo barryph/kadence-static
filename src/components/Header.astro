@@ -1,0 +1,17 @@
+---
+import { withBase } from '../lib/url';
+---
+
+<a
+  class="brand"
+  href={withBase('')}
+  aria-label="Kadence account management — home"
+>
+  <!--
+    The in-app header is a wordmark rather than the square app icon
+    (front-end/components/logo.tsx), so the site reproduces it here. The
+    official K/logotype asset is still used for the favicons and the Open
+    Graph card.
+  -->
+  <span class="brand__name">Kad<span>ence</span></span>
+</a>

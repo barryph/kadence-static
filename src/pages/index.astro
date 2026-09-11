@@ -1,0 +1,47 @@
+---
+import { withBase } from '../lib/url';
+
+// The site exists for one purpose, so the root forwards to it. A static
+// meta-refresh page (rather than Astro.redirect) keeps the output fully
+// static and needs nothing from the host.
+const destination = withBase('delete-account/');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kadence account management</title>
+    <meta
+      name="description"
+      content="Kadence account management: permanently delete your Kadence account."
+    />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; url=${destination}`} />
+    <link rel="canonical" href={destination} />
+    <style>
+      body {
+        margin: 0;
+        display: grid;
+        min-height: 100dvh;
+        place-items: center;
+        padding: 1.5rem;
+        background: #050711;
+        color: #c7ddf5;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 15px;
+        text-align: center;
+      }
+      a {
+        color: #7cc0ff;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      Redirecting to
+      <a href={destination}>Kadence account management</a>&hellip;
+    </p>
+  </body>
+</html>

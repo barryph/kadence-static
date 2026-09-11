@@ -1,0 +1,104 @@
+---
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-600.css';
+import '@fontsource/ibm-plex-mono/latin-700.css';
+import '../styles/global.css';
+
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { withBase } from '../lib/url';
+
+interface Props {
+  /** Full document title. */
+  title: string;
+  /** Meta description, also reused for Open Graph. */
+  description: string;
+  /** Route path with a trailing slash; used for canonical and OG URLs. */
+  path: string;
+  /** Keep the page out of search indexes (token-bearing routes). */
+  noindex?: boolean;
+}
+
+const { title, description, path, noindex = false } = Astro.props;
+
+// `site` comes from astro.config.mjs (SITE_URL). The fallback only matters if
+// the config is edited without a site value.
+const site = Astro.site ?? new URL('https://barryph.github.io');
+const canonical = new URL(withBase(path), site).href;
+const ogImage = new URL(withBase('og-image.png'), site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta name="theme-color" content="#050711" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="Kadence" />
+    {
+      noindex && (
+        <meta name="robots" content="noindex, nofollow, noarchive" />
+      )
+    }
+    <!--
+      Never forward a verification token to another origin through the Referer
+      header, and never resolve assets against an attacker-controlled base.
+    -->
+    <meta name="referrer" content="no-referrer" />
+
+    <link
+      rel="icon"
+      href={withBase('favicon-32.png')}
+      type="image/png"
+      sizes="32x32"
+    />
+    <link
+      rel="icon"
+      href={withBase('favicon-192.png')}
+      type="image/png"
+      sizes="192x192"
+    />
+    <link
+      rel="apple-touch-icon"
+      href={withBase('apple-touch-icon.png')}
+      sizes="180x180"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kadence" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="Kadence account management" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="page">
+      <header class="shell shell--top">
+        <Header />
+      </header>
+
+      <main class="shell shell--body" id="main">
+        <slot />
+      </main>
+
+      <Footer />
+    </div>
+  </body>
+</html>

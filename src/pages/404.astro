@@ -1,0 +1,30 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout
+  title="Page not found | Kadence"
+  description="This Kadence account-management page could not be found."
+  path="404.html"
+  noindex
+>
+  <section class="card" aria-labelledby="page-title">
+    <span class="badge">
+      <Icon name="shield" size={14} />
+      Official Kadence account page
+    </span>
+
+    <h1 id="page-title" style="margin-top: 1rem">Page not found</h1>
+    <p class="lead">
+      The page you were looking for doesn&rsquo;t exist or has moved.
+    </p>
+
+    <div class="actions">
+      <a class="button button--primary" href={withBase('delete-account/')}>
+        Go to account deletion
+      </a>
+    </div>
+  </section>
+</BaseLayout>
