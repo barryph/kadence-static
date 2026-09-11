@@ -131,14 +131,14 @@ This site assumes two endpoints, defined in exactly one place —
 `src/lib/config.ts`:
 
 ```http
-POST {PUBLIC_API_BASE_URL}/auth/account-deletion/request
+POST {PUBLIC_API_BASE_URL}/website/auth/account-deletion/request
 Content-Type: application/json
 
 { "email": "user@example.com" }
 ```
 
 ```http
-POST {PUBLIC_API_BASE_URL}/auth/account-deletion/confirm
+POST {PUBLIC_API_BASE_URL}/website/auth/account-deletion/confirm
 Content-Type: application/json
 
 { "token": "…" }

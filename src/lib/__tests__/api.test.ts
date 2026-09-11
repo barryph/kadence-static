@@ -5,8 +5,8 @@ import type { ApiConfig } from '../config';
 
 const config: ApiConfig = {
   baseUrl: 'https://api.kadence.test',
-  requestPath: '/auth/account-deletion/request',
-  confirmPath: '/auth/account-deletion/confirm',
+  requestPath: '/website/auth/account-deletion/request',
+  confirmPath: '/website/auth/account-deletion/confirm',
   timeoutMs: 1_000,
 };
 
@@ -97,7 +97,9 @@ describe('requestAccountDeletion', () => {
       string,
       RequestInit,
     ];
-    expect(url).toBe('https://api.kadence.test/auth/account-deletion/request');
+    expect(url).toBe(
+      'https://api.kadence.test/website/auth/account-deletion/request',
+    );
     expect(url).not.toContain(EMAIL);
     expect(init.method).toBe('POST');
     expect(JSON.parse(String(init.body))).toEqual({ email: EMAIL });
@@ -154,7 +156,9 @@ describe('confirmAccountDeletion', () => {
       string,
       RequestInit,
     ];
-    expect(url).toBe('https://api.kadence.test/auth/account-deletion/confirm');
+    expect(url).toBe(
+      'https://api.kadence.test/website/auth/account-deletion/confirm',
+    );
     expect(url).not.toContain(TOKEN);
     expect(JSON.parse(String(init.body))).toEqual({ token: TOKEN });
   });

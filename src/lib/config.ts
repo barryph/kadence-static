@@ -16,10 +16,12 @@
  * ships its routes. Everything else in the site goes through the typed API
  * client in `api.ts` and is unaffected.
  */
-export const ACCOUNT_DELETION_REQUEST_PATH = '/auth/account-deletion/request';
+export const ACCOUNT_DELETION_REQUEST_PATH =
+  '/website/auth/account-deletion/request';
 
 /** Backend path that consumes the single-use verification token. */
-export const ACCOUNT_DELETION_CONFIRM_PATH = '/auth/account-deletion/confirm';
+export const ACCOUNT_DELETION_CONFIRM_PATH =
+  '/website/auth/account-deletion/confirm';
 
 /** Requests are aborted after this long so the UI can offer a retry. */
 export const REQUEST_TIMEOUT_MS = 20_000;

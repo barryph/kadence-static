@@ -451,7 +451,7 @@ try {
     assertEqual(confirmRequests.length, 1, 'expected exactly one confirm request');
     assertEqual(
       confirmRequests[0].pathname,
-      '/auth/account-deletion/confirm',
+      '/website/auth/account-deletion/confirm',
       'unexpected endpoint',
     );
     assertEqual(confirmRequests[0].body.token, VALID_TOKEN, 'token should be in the body');
