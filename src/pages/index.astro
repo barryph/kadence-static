@@ -1,10 +1,8 @@
 ---
-import { withBase } from '../lib/url';
-
 // The site exists for one purpose, so the root forwards to it. A static
 // meta-refresh page (rather than Astro.redirect) keeps the output fully
 // static and needs nothing from the host.
-const destination = withBase('delete-account/');
+const destination = '/delete-account/';
 ---
 
 <!doctype html>

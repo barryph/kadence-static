@@ -28,7 +28,6 @@ import { createMockApiServer } from './mock-api.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.join(root, 'dist');
-const BASE_PATH = '/kadence-static/';
 const API_PORT = 3123;
 const SITE_PORT = 4174;
 const DEBUG_PORT = 9333;
@@ -62,12 +61,7 @@ function startStaticServer() {
       return;
     }
 
-    if (!pathname.startsWith(BASE_PATH)) {
-      response.writeHead(404).end('Not found');
-      return;
-    }
-
-    let relative = pathname.slice(BASE_PATH.length);
+    let relative = pathname.replace(/^\/+/, '');
     if (relative === '' || relative.endsWith('/')) relative += 'index.html';
 
     const file = path.join(distDir, relative);
@@ -258,7 +252,6 @@ execFileSync('pnpm', ['run', 'build'], {
     ...process.env,
     PUBLIC_API_BASE_URL: `http://localhost:${API_PORT}`,
     SITE_URL: `http://localhost:${SITE_PORT}`,
-    BASE_PATH,
   },
 });
 
@@ -302,7 +295,7 @@ try {
     `,
   });
 
-  const site = `http://localhost:${SITE_PORT}${BASE_PATH}`;
+  const site = `http://localhost:${SITE_PORT}/`;
   const requestUrl = `${site}delete-account/`;
   const confirmUrl = (token) =>
     `${site}delete-account/confirm/${token ? `?token=${token}` : ''}`;

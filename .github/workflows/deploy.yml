@@ -43,14 +43,13 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
-      # Site URL and base path are derived from the repository by default, so
-      # a project site deploys correctly with no configuration at all.
-      # Override them with repository variables for a custom domain.
+      # The site URL is derived from the repository by default, so a project
+      # site deploys correctly with no configuration at all.
+      # Override it with a repository variable for a custom domain.
       - name: Resolve build configuration
         env:
           VAR_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
           VAR_SITE_URL: ${{ vars.SITE_URL }}
-          VAR_BASE_PATH: ${{ vars.BASE_PATH }}
         run: |
           set -euo pipefail
 
@@ -59,19 +58,15 @@ jobs:
             exit 1
           fi
 
-          repo_name="${GITHUB_REPOSITORY##*/}"
           site_url="${VAR_SITE_URL:-https://${GITHUB_REPOSITORY_OWNER}.github.io}"
-          base_path="${VAR_BASE_PATH:-/${repo_name}}"
 
           {
             echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
             echo "SITE_URL=${site_url}"
-            echo "BASE_PATH=${base_path}"
           } >> "$GITHUB_ENV"
 
           echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
           echo "SITE_URL=${site_url}"
-          echo "BASE_PATH=${base_path}"
 
       - name: Build
         run: pnpm run build

@@ -7,7 +7,6 @@ import '../styles/global.css';
 
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { withBase } from '../lib/url';
 
 interface Props {
   /** Full document title. */
@@ -42,8 +41,8 @@ const {
 // `site` comes from astro.config.mjs (SITE_URL). The fallback only matters if
 // the config is edited without a site value.
 const site = Astro.site ?? new URL('https://barryph.github.io');
-const canonical = new URL(withBase(path), site).href;
-const ogImage = new URL(withBase('og-image.png'), site).href;
+const canonical = new URL(path, site).href;
+const ogImage = new URL('og-image.png', site).href;
 ---
 
 <!doctype html>
@@ -74,19 +73,19 @@ const ogImage = new URL(withBase('og-image.png'), site).href;
 
     <link
       rel="icon"
-      href={withBase('favicon-32.png')}
+      href="/favicon-32.png"
       type="image/png"
       sizes="32x32"
     />
     <link
       rel="icon"
-      href={withBase('favicon-192.png')}
+      href="/favicon-192.png"
       type="image/png"
       sizes="192x192"
     />
     <link
       rel="apple-touch-icon"
-      href={withBase('apple-touch-icon.png')}
+      href="/apple-touch-icon.png"
       sizes="180x180"
     />
 

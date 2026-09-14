@@ -1,7 +1,6 @@
 ---
 import Icon from '../../components/Icon.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { withBase } from '../../lib/url';
 ---
 
 <BaseLayout
@@ -46,7 +45,7 @@ import { withBase } from '../../lib/url';
             <span class="spinner"></span>
             <span data-role="confirm-label">Permanently delete account</span>
           </button>
-          <a class="button button--ghost" href={withBase('delete-account/')}>
+          <a class="button button--ghost" href="/delete-account/">
             Cancel
           </a>
         </div>
@@ -85,7 +84,7 @@ import { withBase } from '../../lib/url';
           are sent. This link may have expired or already been used.
         </p>
         <div class="actions">
-          <a class="button button--primary" href={withBase('delete-account/')}>
+          <a class="button button--primary" href="/delete-account/">
             Request a new deletion email
           </a>
         </div>

@@ -1,7 +1,6 @@
 ---
 import Icon from '../components/Icon.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { withBase } from '../lib/url';
 ---
 
 <BaseLayout
@@ -22,7 +21,7 @@ import { withBase } from '../lib/url';
     </p>
 
     <div class="actions">
-      <a class="button button--primary" href={withBase('delete-account/')}>
+      <a class="button button--primary" href="/delete-account/">
         Go to account deletion
       </a>
     </div>

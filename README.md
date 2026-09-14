@@ -111,7 +111,7 @@ cp .env.example .env      # PUBLIC_API_BASE_URL=http://localhost:3000
 pnpm run dev
 ```
 
-Open <http://localhost:4321/kadence-static/delete-account/>.
+Open <http://localhost:4321/delete-account/>.
 
 The mock API logs requests by **method and path only** — never the email address
 or token — and can simulate failure modes:
@@ -136,7 +136,6 @@ the invalid-link state is easy to exercise:
 | --- | --- | --- |
 | `PUBLIC_API_BASE_URL` | yes (build) | Base URL of the Kadence API, e.g. `https://api.kadence.app`. No trailing slash needed. |
 | `SITE_URL` | no | Public site URL used for `<link rel="canonical">` and Open Graph. Defaults to `https://barryph.github.io`. |
-| `BASE_PATH` | no | Sub-path the site is served from. Defaults to `/kadence-static`; use `/` for a custom domain or a user/organisation page. |
 
 **`PUBLIC_*` variables are public.** Astro inlines them into the static bundle at
 build time, so they end up in the shipped JavaScript. Never put a credential,
@@ -228,13 +227,13 @@ ownership and authorizes the deletion. What this site guarantees:
 
 ```bash
 pnpm run typecheck   # astro check (zero errors, zero warnings)
-pnpm run test        # 60 unit tests (vitest + jsdom)
+pnpm run test        # 57 unit tests (vitest + jsdom)
 pnpm run build       # static build into dist/
 pnpm run test:e2e    # 24 real-browser checks (Chromium + mock API)
 pnpm run check       # typecheck + unit tests + build
 ```
 
-- **Unit tests** (`src/lib/__tests__/`) cover URL/base handling, email
+- **Unit tests** (`src/lib/__tests__/`) cover email
   validation, every status-code mapping, credential hygiene (nothing is ever
   logged), and each loading/success/error transition of both controllers against
   real jsdom nodes.
@@ -279,31 +278,32 @@ Pages can serve it directly from an artifact.
    | --- | --- | --- |
    | `PUBLIC_API_BASE_URL` | **yes** | `https://api.kadence.app` |
    | `SITE_URL` | no | `https://barryph.github.io` (default) |
-   | `BASE_PATH` | no | `/kadence-static` (default) |
 
    The workflow **fails with a clear error** if `PUBLIC_API_BASE_URL` is unset —
    a deployed site without it cannot submit anything, so failing loudly is
    better than shipping it.
 
-   `SITE_URL` and `BASE_PATH` are derived from the repository automatically:
-   `BASE_PATH` becomes `/<repo-name>` (a project site) and `SITE_URL` becomes
+   `SITE_URL` is derived from the repository automatically: it becomes
    `https://<owner>.github.io`.
 
 4. **Allow the origin on the backend** — add the Pages origin to the API's
-   `CORS_ORIGINS`. For a project site that is
-   `https://<owner>.github.io` (origins are scheme + host + port, with no path).
+   `CORS_ORIGINS`. That is `https://<owner>.github.io` (origins are scheme +
+   host + port, with no path).
 
 ### Custom domain
 
-Set `SITE_URL=https://your.domain` and `BASE_PATH=/`, add a `public/CNAME` file
+Set `SITE_URL=https://your.domain`, add a `public/CNAME` file
 containing the domain, and configure the DNS records GitHub documents.
+
+The build always uses `/` as the base path, so the site must be served from the
+root of its domain — a custom domain or a user/organisation page
+(`https://<owner>.github.io`), not a repository sub-path.
 
 ### Why it deploys cleanly
 
 - `astro.config.mjs` sets `output: 'static'` — no adapter, no Node runtime.
-- Internal links and public assets are prefixed with `import.meta.env.BASE_URL`
-  via `src/lib/url.ts`, so the same build works at a domain root or under a
-  repo sub-path.
+- The site is always served from the domain root (`base: '/'`, Astro's default),
+  so internal links and public assets use plain root-relative paths.
 - `public/.nojekyll` is included so the `_astro/` asset directory is served even
   if Pages ever falls back to Jekyll processing.
 - `dist/` contains no secrets and no environment-specific URLs beyond the public
@@ -334,7 +334,7 @@ containing the domain, and configure the DNS records GitHub documents.
 │   │   ├── config.ts              # endpoint paths + base-URL policy
 │   │   ├── delete-request-form.ts # request-page controller
 │   │   ├── delete-confirm.ts      # confirmation-page controller
-│   │   ├── dom.ts, email.ts, url.ts
+│   │   ├── dom.ts, email.ts
 │   │   └── __tests__/             # unit tests
 │   ├── pages/
 │   │   ├── index.astro            # redirects to /delete-account/
