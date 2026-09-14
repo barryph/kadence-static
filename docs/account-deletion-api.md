@@ -6,9 +6,11 @@
 **Related:** `back-end/docs/oauth-sign-in.md` in the monorepo (same document style)
 
 This document specifies the two HTTP endpoints the account-deletion site calls.
-It is written against the conventions already present in
-`back-end/src/modules/authentication/`, and every status code is mapped to the
-UI state the site produces today, so the two sides cannot drift.
+It is written against the conventions already present in the backend's DDD
+modules (`src/modules/<feature>/`), and every status code is mapped to the UI
+state the site produces today, so the two sides cannot drift. The feature ships
+as its own `website` module: all of its code and files belong in
+`src/modules/website/` (§10).
 
 The frontend is **not** an authorization boundary. The backend remains solely
 responsible for verifying ownership and authorizing deletion.
@@ -169,10 +171,11 @@ the same thing.
    return the same `400 INVALID_DELETION_TOKEN`. Do not distinguish them in the
    response; the difference may only appear in server-side logs.
 3. The endpoint MUST delegate to the existing
-   `AccountDeletionService.deleteAccount(userId)`. It MUST NOT reimplement
-   deletion. That service already: revokes Apple authorization before touching
-   the database, runs all deletes in one transaction, and relies on the
-   `ON DELETE CASCADE` constraints as a safety net.
+   `AccountDeletionService.deleteAccount(userId)` (injected from
+   `modules/authentication/`; see §10). It MUST NOT reimplement, duplicate or
+   relocate deletion. That service already: revokes Apple authorization before
+   touching the database, runs all deletes in one transaction, and relies on
+   the `ON DELETE CASCADE` constraints as a safety net.
 4. If `deleteAccount` throws `AccountNotFoundError` (account already gone), the
    endpoint MUST translate it to `400 INVALID_DELETION_TOKEN` rather than
    surfacing `404`, so that "deleted" and "never existed" are indistinguishable.
@@ -266,9 +269,11 @@ better choice if you want to retain an audit trail of issued/consumed tokens.
 Either way, the `user_id` reference MUST `ON DELETE CASCADE`, and the digest
 column MUST be unique.
 
-Reuse the existing crypto helpers in
+Put this in the website module's `utils/account-deletion-token.ts`. Reuse the
+existing crypto helpers in
 `src/modules/authentication/utils/password-reset-token.ts` by generalising them
-(they are already `generate*`/`hash*` pairs over `randomBytes(20)` + SHA-256).
+in place and importing them (they are already `generate*`/`hash*` pairs over
+`randomBytes(20)` + SHA-256); do not duplicate the crypto in the website module.
 
 ---
 
@@ -280,7 +285,10 @@ Reuse the existing crypto helpers in
 each payload in memory and logs that a message *would* be sent. This is the
 established treatment for transactional mail — password reset already runs
 against it — and the account-deletion flow MUST use the same sender rather than
-introducing a second abstraction or a real provider of its own.
+introducing a second abstraction or a real provider of its own. The port, the
+`EMAIL_SENDER` token and `NoopEmailSender` stay in `modules/authentication/`
+because password reset shares them; the `WebsiteModule` built in §10 consumes
+them through its import of `AuthenticaitonModule`.
 
 Consequences:
 
@@ -420,31 +428,90 @@ be turned into an enumeration oracle.
 
 ---
 
-## 10. Suggested implementation shape
+## 10. Implementation shape and module placement
 
-Following `back-end/AGENTS.md` (DDD, feature under `modules/<feature>/`, split
-into `domain/`/`repos/`/`services/`/`dtos/`):
+This feature ships as a **new NestJS/DDD module**, `src/modules/website/`.
+**All of the feature's own code and files MUST live in that module** — do not
+add the account-deletion controller, DTOs, request service, token repository,
+constants, helpers or errors to `modules/authentication/` or anywhere else.
+Follow the backend conventions in `AGENTS.md` (DDD + Clean Architecture:
+features under `src/modules/<feature>/` split into `domain/`, `repos/`,
+`services/`, `queries/`, `mappers/`, `dtos/`):
 
 ```text
-src/modules/authentication/
-├── account-deletion.controller.ts          # @Controller('website/auth/account-deletion')
+src/modules/website/
+├── website.module.ts                        # new NestJS module
+├── account-deletion.controller.ts           # @Controller('website/auth/account-deletion')
 ├── dtos/
-│   ├── account-deletion-request.dto.ts     # { email }
-│   └── account-deletion-confirm.dto.ts     # { token }
+│   ├── account-deletion-request.dto.ts      # { email }
+│   └── account-deletion-confirm.dto.ts      # { token }
 ├── services/
-│   ├── account-deletion.service.ts         # existing; reused as-is
-│   └── account-deletion-request.service.ts # token issue + email dispatch
+│   └── account-deletion-request.service.ts  # token issue + email dispatch
 ├── repos/
-│   ├── account-deletion.repository.ts      # existing; reused as-is
 │   └── account-deletion-token.repository.ts
-├── constants/account-deletion.constants.ts # expiry, throttle values
-├── utils/account-deletion-token.ts         # generate/hash (or generalise reset helpers)
-└── authentication.errors.ts                # + InvalidDeletionTokenError
+├── constants/account-deletion.constants.ts  # expiry, throttle values
+├── utils/account-deletion-token.ts          # generate/hash (or generalise reset helpers)
+└── website.errors.ts                        # + InvalidDeletionTokenError
 ```
 
+`domain/`, `queries/` and `mappers/` are added only if this feature introduces
+its own entities, read models or persistence mapping; a feature that has none
+MAY leave them out.
+
+### What stays in `modules/authentication/`
+
+The module split is deliberate: shared pieces already owned by authentication
+stay there, and `WebsiteModule` imports them rather than copying or moving them.
+
+- `services/account-deletion.service.ts` (`AccountDeletionService`) and
+  `repos/account-deletion.repository.ts` (`AccountDeletionRepository`) remain in
+  `modules/authentication/`. They are the single deletion implementation and
+  also serve the in-app `DELETE /auth/account`, whose behaviour MUST NOT change.
+  `WebsiteModule` injects the existing `AccountDeletionService`; it MUST NOT
+  reimplement or relocate it.
+- `ports/email-sender.port.ts` (`IEmailSender`, `EMAIL_SENDER`) and
+  `infrastructure/noop-email-sender.ts` (`NoopEmailSender`) remain in
+  `modules/authentication/`, because password reset shares them (§6).
+- `authentication.errors.ts` stays as it is; the new error is declared in the
+  website module instead (`website.errors.ts`).
+
+So that `WebsiteModule` can inject the shared service, `AuthenticaitonModule`
+MUST export it — its `exports` array is currently empty:
+
+```ts
+// modules/authentication/authentication.module.ts
+@Module({
+  imports: [UsersModule, PassportModule],
+  controllers: [AuthenticationController],
+  providers: [ /* … unchanged … */ ],
+  exports: [AccountDeletionService], // new: consumed by WebsiteModule
+})
+export class AuthenticaitonModule {}
+
+// modules/website/website.module.ts
+@Module({
+  imports: [AuthenticaitonModule, UsersModule],
+  controllers: [AccountDeletionController],
+  providers: [
+    AccountDeletionRequestService,
+    AccountDeletionTokenRepo,
+    // EMAIL_SENDER is bound by AuthenticaitonModule; consume it via that import,
+    // or re-bind NoopEmailSender here if the module does not export it.
+  ],
+})
+export class WebsiteModule {}
+```
+
+`WebsiteModule` MUST be registered in `AppModule`. The exact provider wiring is
+the backend team's call; what the contract fixes is the placement — the
+feature's own code under `modules/website/`, the shared deletion service and
+email port left in `modules/authentication/`, and `DELETE /auth/account`
+unchanged.
+
 Controller skeleton, matching the existing decorators. It assumes
-`AccountDeletionRequestService`, `InvalidDeletionTokenError` and the existing
-`AccountNotFoundError` are in scope:
+`AccountDeletionRequestService`, `InvalidDeletionTokenError` (from
+`website.errors.ts`) and `AccountNotFoundError` (imported from the
+authentication module) are in scope:
 
 ```ts
 @Controller('website/auth/account-deletion')
@@ -491,7 +558,8 @@ export class AccountDeletionController {
 transaction, which cascades the token columns away. That is what makes the
 token single-use; there is no separate "mark as used" step to get wrong.
 
-New error, alongside the existing ones in `authentication.errors.ts`:
+New error, declared in the website module's `website.errors.ts` (not in
+`authentication.errors.ts`):
 
 ```ts
 export class InvalidDeletionTokenError extends ServerError {
@@ -503,9 +571,10 @@ export class InvalidDeletionTokenError extends ServerError {
 ```
 
 Note: guards are applied per-route in this codebase (`@UseGuards` on the
-method, not the controller), so adding unauthenticated routes to
-`AuthenticationController` — or a sibling controller — will not inherit
-`IsAuthedGuard`. Verify no controller-level guard is introduced.
+method, not the controller), so the new unauthenticated routes on the website
+module's `AccountDeletionController` will not inherit `IsAuthedGuard`. Verify no
+controller-level guard is introduced, and that importing `AuthenticaitonModule`
+does not pull a guard onto these routes.
 
 ---
 
@@ -513,7 +582,10 @@ method, not the controller), so adding unauthenticated routes to
 
 Following the naming convention that the Jest configs match on:
 unit `*.spec.ts`, integration `*.int-spec.ts` (Testcontainers + Postgres),
-E2E `*.e2e-spec.ts` under `test/e2e/`.
+E2E `*.e2e-spec.ts` under `test/e2e/`. Unit and integration specs live beside
+the feature code in `src/modules/website/` (the shared
+`AccountDeletionService` keeps its existing tests in
+`modules/authentication/`).
 
 **Request endpoint**
 
