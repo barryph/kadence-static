@@ -18,9 +18,26 @@ interface Props {
   path: string;
   /** Keep the page out of search indexes (token-bearing routes). */
   noindex?: boolean;
+  /**
+   * Extra class on `<body>`, letting a page opt into its own presentation
+   * without touching the shared app theme (see the Privacy Policy page).
+   */
+  bodyClass?: string;
+  /** Browser UI colour (address bar). Defaults to the app's dark background. */
+  themeColor?: string;
+  /** `color-scheme` for the page; defaults to the app's dark theme. */
+  colorScheme?: 'dark' | 'light';
 }
 
-const { title, description, path, noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  path,
+  noindex = false,
+  bodyClass,
+  themeColor = '#050711',
+  colorScheme = 'dark',
+} = Astro.props;
 
 // `site` comes from astro.config.mjs (SITE_URL). The fallback only matters if
 // the config is edited without a site value.
@@ -41,8 +58,8 @@ const ogImage = new URL(withBase('og-image.png'), site).href;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <meta name="theme-color" content="#050711" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="color-scheme" content={colorScheme} />
     <meta name="application-name" content="Kadence" />
     {
       noindex && (
@@ -86,7 +103,7 @@ const ogImage = new URL(withBase('og-image.png'), site).href;
     <meta name="twitter:image" content={ogImage} />
   </head>
 
-  <body>
+  <body class={bodyClass}>
     <a class="skip-link" href="#main">Skip to content</a>
 
     <div class="page">

@@ -10,6 +10,7 @@ user to sign in to the app.
 
 - **Live route:** `/delete-account/`
 - **Confirmation route:** `/delete-account/confirm/?token=…`
+- **Privacy policy route:** `/privacy-policy/`
 - **Stack:** Astro (static output), TypeScript, hand-written CSS, a few KB of
   vanilla client-side TypeScript. No UI framework, no server runtime.
 
@@ -18,6 +19,7 @@ user to sign in to the app.
 ## Contents
 
 - [How it works](#how-it-works)
+- [Privacy policy page](#privacy-policy-page)
 - [Brand and design provenance](#brand-and-design-provenance)
 - [Local development](#local-development)
 - [Configuration](#configuration)
@@ -49,6 +51,27 @@ user to sign in to the app.
 Only transport-level failures (rate limiting, network problems, 5xx) produce an
 error state. A `4xx` on the request endpoint is deliberately treated as success
 so the endpoint cannot be used to enumerate accounts.
+
+## Privacy policy page
+
+`/privacy-policy/` publishes the Kadence Privacy Policy at a stable URL that can
+be linked from the App stores and from inside the app.
+
+- **Content lives in [`src/content/privacy-policy.md`](src/content/privacy-policy.md)** —
+  plain Markdown, no embedded HTML. Edit that file to change the policy; the
+  page needs no code changes.
+- `src/pages/privacy-policy.astro` renders it with **Astro's built-in Markdown
+  pipeline**, so there is no Markdown dependency to maintain. The page adds only
+  presentation.
+- Because a legal document is read rather than operated, the page opts into its
+  own **document theme** (via `bodyClass="document-page"` on `BaseLayout`): a
+  white background, black text, a proportional system font, a ~68-character
+  measure, generous line height, and underline links. It keeps the shared
+  header, footer and skip link so it still reads as Kadence.
+- Accessibility: semantic landmarks, one `h1` with no skipped heading levels,
+  dark-on-white contrast throughout, a dark-blue focus ring (the app's cyan ring
+  is too low-contrast on white), and a table that scrolls horizontally on small
+  screens instead of overflowing.
 
 ## Brand and design provenance
 
@@ -207,7 +230,7 @@ ownership and authorizes the deletion. What this site guarantees:
 pnpm run typecheck   # astro check (zero errors, zero warnings)
 pnpm run test        # 60 unit tests (vitest + jsdom)
 pnpm run build       # static build into dist/
-pnpm run test:e2e    # 19 real-browser checks (Chromium + mock API)
+pnpm run test:e2e    # 24 real-browser checks (Chromium + mock API)
 pnpm run check       # typecheck + unit tests + build
 ```
 
@@ -219,8 +242,11 @@ pnpm run check       # typecheck + unit tests + build
   *built pages* in headless Chromium: the request flow, the whole confirmation
   flow, token-in-body-not-URL, token-absent-from-DOM, no horizontal overflow at
   320–1280 px, ≥44 px touch targets, ≥16 px input font size, and a real
-  assertion that the Kadence typeface loads. It needs a Chromium/Chrome binary
-  (`CHROME_BIN` overrides detection).
+  assertion that the Kadence typeface loads. It also covers the Privacy Policy
+  page — Markdown rendering, one `h1`, no skipped heading levels, a white
+  background with near-black text and a non-mono body font, no horizontal
+  overflow at 320–1280 px, and the footer link. It needs a Chromium/Chrome
+  binary (`CHROME_BIN` overrides detection).
 
 There is no separate ESLint/Prettier config: `astro check` runs full TypeScript
 diagnostics over `.astro` and `.ts` files, and the codebase deliberately has no
@@ -300,6 +326,8 @@ containing the domain, and configure the DNS records GitHub documents.
 │   └── og/og-image.html           # OG card source template
 ├── src/
 │   ├── components/                # Header, Footer, Icon
+│   ├── content/
+│   │   └── privacy-policy.md      # Privacy Policy text (plain Markdown)
 │   ├── layouts/BaseLayout.astro   # <head>, metadata, fonts, page shell
 │   ├── lib/
 │   │   ├── api.ts                 # typed client — the only network code
@@ -311,6 +339,7 @@ containing the domain, and configure the DNS records GitHub documents.
 │   ├── pages/
 │   │   ├── index.astro            # redirects to /delete-account/
 │   │   ├── 404.astro
+│   │   ├── privacy-policy.astro   # renders src/content/privacy-policy.md
 │   │   └── delete-account/
 │   │       ├── index.astro
 │   │       └── confirm.astro
@@ -334,6 +363,9 @@ together.
 - State is never conveyed by colour alone — every state has an icon **and** text.
 - Visible `:focus-visible` outlines on all interactive elements, 3:1+ contrast
   against the dark surface.
+- The Privacy Policy page uses its own light document theme: dark text on white,
+  a proportional font and a comfortable measure, a dark-blue focus ring for
+  contrast on white, and a heading structure with no skipped levels.
 - Mobile-first layout with `env(safe-area-inset-*)` padding, ≥44 px touch
   targets, 16 px form-input text (prevents iOS zoom-on-focus), and no horizontal
   overflow from 320 px upwards.
@@ -354,5 +386,5 @@ together.
 - The real backend must enforce: single-use, short-lived tokens; rate limiting;
   neutral responses for the request endpoint; and it must not report whether an
   account exists.
-- Consider adding a link to the hosted privacy policy in the footer once its URL
-  exists (deliberately omitted here rather than inventing one).
+- Keep the Privacy Policy's Markdown and the version string in the app's own
+  records in sync when the policy changes.

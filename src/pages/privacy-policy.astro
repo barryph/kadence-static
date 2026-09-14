@@ -1,0 +1,281 @@
+---
+import Content from '../content/privacy-policy.md';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<!--
+  The policy text lives in `src/content/privacy-policy.md` and is rendered with
+  Astro's built-in Markdown support, so the document can be edited without
+  touching this page. The page itself is presentation only: it opts into the
+  light, document-oriented shell via `bodyClass`.
+-->
+<BaseLayout
+  title="Privacy Policy | Kadence"
+  description="How Kadence, a Code Complete Labs product, collects, uses, shares, and protects your personal information."
+  path="privacy-policy/"
+  bodyClass="document-page"
+  themeColor="#ffffff"
+  colorScheme="light"
+>
+  <article class="legal-doc">
+    <Content />
+  </article>
+</BaseLayout>
+
+<style is:global>
+  /* ======================================================================
+     Privacy Policy — document presentation
+     ----------------------------------------------------------------------
+     Deliberately separate from the app's dark theme: a legal document is
+     read, not operated, so this page trades the app's mono type and glow for
+     a white page, black text and a proportional system font. It still shares
+     the site's header, footer, spacing rhythm and links, so it reads as part
+     of the same product.
+     ====================================================================== */
+
+  /* Astro bundles this stylesheet into the Privacy Policy page only, so
+     overriding the root token here stays page-scoped and keeps scrollbars and
+     form controls light alongside the white page. */
+  :root {
+    color-scheme: light;
+  }
+
+  body.document-page {
+    color-scheme: light;
+    background-color: #ffffff;
+    color: #111111;
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Remove the app's glow and top hairline, which only make sense on dark. */
+  body.document-page::before,
+  body.document-page::after {
+    display: none;
+  }
+
+  /* A wider measure than the app's 34rem form column, still easy to track. */
+  body.document-page .shell {
+    max-width: 48rem;
+  }
+
+  body.document-page .brand {
+    color: #111111;
+  }
+
+  body.document-page .brand__name span {
+    color: #6b7280;
+  }
+
+  body.document-page .page__footer {
+    color: #4b5563;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+  }
+
+  body.document-page .page__footer strong {
+    color: #111111;
+  }
+
+  body.document-page a {
+    color: #0a4d9c;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
+
+  body.document-page a:hover {
+    color: #06306a;
+    text-decoration-thickness: 2px;
+  }
+
+  /* The app's cyan focus ring is invisible on white; use a dark blue one. */
+  body.document-page :focus-visible {
+    outline: 3px solid #0a4d9c;
+    outline-offset: 2px;
+  }
+
+  body.document-page .skip-link {
+    background: #0a4d9c;
+  }
+
+  /* --- Document ---------------------------------------------------------- */
+
+  body.document-page .legal-doc {
+    max-width: 68ch;
+    margin-inline: auto;
+    padding-block: 0.5rem 1rem;
+    color: #1a1a1a;
+  }
+
+  body.document-page .legal-doc > :first-child {
+    margin-top: 0;
+  }
+
+  body.document-page .legal-doc h1 {
+    margin: 0 0 1.5rem;
+    color: #000000;
+    font-size: clamp(1.85rem, 5vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  body.document-page .legal-doc h2 {
+    margin: 3rem 0 1rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid #e5e7eb;
+    color: #000000;
+    font-size: clamp(1.35rem, 3.5vw, 1.6rem);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    scroll-margin-top: 1.5rem;
+  }
+
+  body.document-page .legal-doc h3 {
+    margin: 2rem 0 0.65rem;
+    color: #111111;
+    font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+    font-weight: 650;
+    line-height: 1.4;
+    scroll-margin-top: 1.5rem;
+  }
+
+  body.document-page .legal-doc p {
+    margin: 0 0 1.15rem;
+  }
+
+  body.document-page .legal-doc ul,
+  body.document-page .legal-doc ol {
+    margin: 0 0 1.15rem;
+    padding-left: 1.5rem;
+  }
+
+  body.document-page .legal-doc li {
+    margin: 0.45rem 0;
+    padding-left: 0.25rem;
+  }
+
+  body.document-page .legal-doc li > ul,
+  body.document-page .legal-doc li > ol {
+    margin-top: 0.45rem;
+    margin-bottom: 0;
+  }
+
+  body.document-page .legal-doc strong {
+    color: #000000;
+    font-weight: 650;
+  }
+
+  /* GFM turns bare email addresses into links; let long ones wrap rather than
+     push the page wider than a 320px phone. */
+  body.document-page .legal-doc a {
+    overflow-wrap: anywhere;
+  }
+
+  body.document-page .legal-doc hr {
+    height: 1px;
+    margin: 2.5rem 0;
+    border: 0;
+    background: #e5e7eb;
+  }
+
+  body.document-page .legal-doc blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid #cbd5e1;
+    border-radius: 0 8px 8px 0;
+    background-color: #f8fafc;
+    color: #334155;
+  }
+
+  body.document-page .legal-doc blockquote p {
+    margin: 0 0 0.35rem;
+  }
+
+  body.document-page .legal-doc blockquote p:last-child {
+    margin-bottom: 0;
+  }
+
+  body.document-page .legal-doc code {
+    padding: 0.1em 0.35em;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background-color: #f1f5f9;
+    color: #1e293b;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
+      monospace;
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+  }
+
+  /* Long comparison tables: fixed columns wrap on wide screens, and the
+     table becomes a scrollable region on small ones. */
+  body.document-page .legal-doc table {
+    width: 100%;
+    margin: 1.5rem 0;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  body.document-page .legal-doc th,
+  body.document-page .legal-doc td {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d1d5db;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  body.document-page .legal-doc thead th {
+    background-color: #eef2f7;
+    color: #000000;
+    font-weight: 650;
+  }
+
+  @media (min-width: 40.01rem) {
+    body.document-page .legal-doc table {
+      table-layout: fixed;
+    }
+
+    body.document-page .legal-doc thead th:first-child {
+      width: 27%;
+    }
+
+    body.document-page .legal-doc thead th:nth-child(2) {
+      width: 29%;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    body.document-page .legal-doc table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Keep columns wide enough to read; the table then scrolls sideways
+       instead of shredding words into fragments. */
+    body.document-page .legal-doc th,
+    body.document-page .legal-doc td {
+      min-width: 9.5rem;
+    }
+  }
+
+  @media (max-width: 26rem) {
+    body.document-page {
+      font-size: 1rem;
+    }
+  }
+</style>

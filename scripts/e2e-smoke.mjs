@@ -597,6 +597,110 @@ try {
     );
     await session.send('Emulation.clearDeviceMetricsOverride');
   });
+
+  console.log('\nPrivacy policy');
+
+  const privacyUrl = `${site}privacy-policy/`;
+
+  await check('renders the policy from Markdown with a single h1', async () => {
+    await session.goto(privacyUrl);
+    assertEqual(
+      await session.evaluate(`document.querySelectorAll('h1').length`),
+      1,
+      'expected exactly one h1',
+    );
+    assertEqual(
+      await session.evaluate(`document.querySelector('h1').textContent.trim()`),
+      'Privacy Policy — Kadence',
+      'unexpected policy title',
+    );
+    assertEqual(
+      await session.evaluate(
+        `document.querySelectorAll('article.legal-doc h2').length`,
+      ),
+      9,
+      'expected the nine numbered sections',
+    );
+    assert(
+      await session.evaluate(
+        `!!document.querySelector('article.legal-doc table thead th')`,
+      ),
+      'the third-party services table should render',
+    );
+    assert(
+      await session.evaluate(
+        `document.querySelector('article.legal-doc').textContent.includes('codecompletelabs+privacy@gmail.com')`,
+      ),
+      'the contact address should be present',
+    );
+    assert(
+      await session.evaluate(
+        `document.querySelector('article.legal-doc').textContent.includes('2026/09/10')`,
+      ),
+      'the last-updated date should be present',
+    );
+  });
+
+  await check('uses a readable light theme', async () => {
+    await session.goto(privacyUrl);
+    const theme = await session.evaluate(`(() => {
+      const style = getComputedStyle(document.body);
+      return {
+        bg: style.backgroundColor,
+        fg: style.color,
+        font: style.fontFamily,
+        lineHeight: parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+      };
+    })()`);
+    assertEqual(theme.bg, 'rgb(255, 255, 255)', 'expected a white background');
+    assertEqual(theme.fg, 'rgb(17, 17, 17)', 'expected near-black text');
+    assert(!/mono/i.test(theme.font), 'body copy should not use the app mono font');
+    assert(theme.lineHeight >= 1.5, `body line-height is only ${theme.lineHeight}`);
+  });
+
+  await check('keeps a logical heading order', async () => {
+    await session.goto(privacyUrl);
+    const levels = await session.evaluate(
+      `[...document.querySelectorAll('article.legal-doc h1, article.legal-doc h2, article.legal-doc h3')].map((h) => Number(h.tagName[1]))`,
+    );
+    assert(levels[0] === 1, 'the document should start at an h1');
+    for (let i = 1; i < levels.length; i += 1) {
+      assert(
+        levels[i] - levels[i - 1] <= 1,
+        `heading level jumps from h${levels[i - 1]} to h${levels[i]}`,
+      );
+    }
+  });
+
+  await check('does not overflow horizontally on the policy page', async () => {
+    for (const width of [320, 375, 414, 768, 1280]) {
+      await session.send('Emulation.setDeviceMetricsOverride', {
+        width,
+        height: 900,
+        deviceScaleFactor: 1,
+        mobile: width <= 480,
+      });
+      await session.goto(privacyUrl);
+      const overflow = await session.evaluate(
+        `document.documentElement.scrollWidth - document.documentElement.clientWidth`,
+      );
+      assert(
+        overflow <= 1,
+        `horizontal overflow of ${overflow}px at ${width}px wide`,
+      );
+    }
+    await session.send('Emulation.clearDeviceMetricsOverride');
+  });
+
+  await check('links to the policy from the deletion page footer', async () => {
+    await session.goto(requestUrl);
+    assert(
+      await session.evaluate(
+        `!!document.querySelector('footer a[href$="privacy-policy/"]')`,
+      ),
+      'expected a footer link to the privacy policy',
+    );
+  });
 } catch (error) {
   console.error(`\nE2E harness failed: ${error.stack ?? error.message}`);
   exitCode = 1;
