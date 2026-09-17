@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 
 // Public production URL. Used for canonical and Open Graph tags only.
 const site =
-  process.env.SITE_URL?.trim() || 'https://kadence.static.barryph.com';
+  process.env.SITE_URL?.trim() || 'https://accounts.kadence.barryph.com';
 
 // Static output only: the site is pure HTML/CSS/JS and never needs a Node
 // runtime, which is what makes it suitable for GitHub Pages.

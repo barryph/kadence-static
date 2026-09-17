@@ -40,7 +40,7 @@ const {
 
 // `site` comes from astro.config.mjs (SITE_URL). The fallback only matters if
 // the config is edited without a site value.
-const site = Astro.site ?? new URL('https://kadence.static.barryph.com');
+const site = Astro.site ?? new URL('https://accounts.kadence.barryph.com');
 const canonical = new URL(path, site).href;
 const ogImage = new URL('og-image.png', site).href;
 ---

@@ -57,7 +57,7 @@ jobs:
           set -euo pipefail
 
           api_base_url="${VAR_API_BASE_URL:-https://kadence.barryph.com}"
-          site_url="${VAR_SITE_URL:-https://kadence.static.barryph.com}"
+          site_url="${VAR_SITE_URL:-https://accounts.kadence.barryph.com}"
 
           {
             echo "PUBLIC_API_BASE_URL=${api_base_url}"

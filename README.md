@@ -135,10 +135,10 @@ the invalid-link state is easy to exercise:
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `PUBLIC_API_BASE_URL` | yes (build) | Base URL of the Kadence API. Production: `https://kadence.barryph.com`. No trailing slash needed. |
-| `SITE_URL` | no | Public site URL used for `<link rel="canonical">` and Open Graph. Production: `https://kadence.static.barryph.com`. |
+| `SITE_URL` | no | Public site URL used for `<link rel="canonical">` and Open Graph. Production: `https://accounts.kadence.barryph.com`. |
 
 The site and the API are on **different origins** in production
-(`kadence.static.barryph.com` vs `kadence.barryph.com`), so the backend must
+(`accounts.kadence.barryph.com` vs `kadence.barryph.com`), so the backend must
 allow the site origin via CORS.
 
 **`PUBLIC_*` variables are public.** Astro inlines them into the static bundle at
@@ -198,7 +198,7 @@ detail, stack trace or PII can leak into the UI or a log line.
 
 The backend must allow the site's origin via its `CORS_ORIGINS` environment
 variable (`back-end/src/configure-app.ts`), e.g.
-`CORS_ORIGINS=https://kadence.static.barryph.com`.
+`CORS_ORIGINS=https://accounts.kadence.barryph.com`.
 
 ## Security model
 
@@ -283,19 +283,19 @@ Pages can serve it directly from an artifact.
    | Variable | Required | Default |
    | --- | --- | --- |
    | `PUBLIC_API_BASE_URL` | no | `https://kadence.barryph.com` |
-   | `SITE_URL` | no | `https://kadence.static.barryph.com` |
+   | `SITE_URL` | no | `https://accounts.kadence.barryph.com` |
 
    A build with no API URL at all (e.g. plain `pnpm run build` without `.env`)
    cannot submit anything; the site surfaces a clear "misconfigured" message
    rather than failing silently.
 
 4. **Allow the origin on the backend** — add the site origin to the API's
-   `CORS_ORIGINS`: `https://kadence.static.barryph.com` (an origin is scheme +
+   `CORS_ORIGINS`: `https://accounts.kadence.barryph.com` (an origin is scheme +
    host + port, with no path). Note this differs from the API host itself.
 
 ### Custom domain
 
-The site is served at `https://kadence.static.barryph.com`. That is pinned by
+The site is served at `https://accounts.kadence.barryph.com`. That is pinned by
 `public/CNAME` (which GitHub Pages copies into the build) and by the default
 `SITE_URL` in `.github/workflows/deploy.yml`. To move it, change both, then
 configure the DNS records GitHub documents.
