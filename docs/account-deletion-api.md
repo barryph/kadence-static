@@ -356,7 +356,7 @@ MUST already satisfy them so the swap to a real sender is mechanical.
 
   | Variable | Example |
   | --- | --- |
-  | `ACCOUNT_DELETION_SITE_URL` | `https://barryph.github.io` |
+  | `ACCOUNT_DELETION_SITE_URL` | `https://kadence.static.barryph.com` |
 
   This is a public URL, not a secret.
 - Subject SHOULD name the action, e.g. *"Delete your Kadence account"*.

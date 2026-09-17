@@ -43,9 +43,12 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
-      # The site URL is derived from the repository by default, so a project
-      # site deploys correctly with no configuration at all.
-      # Override it with a repository variable for a custom domain.
+      # The production URLs are committed here so a push to main deploys a
+      # working site with no extra configuration. Repository variables
+      # (Settings -> Secrets and variables -> Actions -> Variables) override
+      # them, e.g. to build against a staging API.
+      #
+      # NOTE: the API and the site are deliberately on different origins.
       - name: Resolve build configuration
         env:
           VAR_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
@@ -53,19 +56,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ -z "${VAR_API_BASE_URL}" ]; then
-            echo "::error title=Missing PUBLIC_API_BASE_URL::Set the repository variable PUBLIC_API_BASE_URL (Settings -> Secrets and variables -> Actions -> Variables), for example https://api.kadence.app. A site built without it cannot submit deletion requests."
-            exit 1
-          fi
-
-          site_url="${VAR_SITE_URL:-https://${GITHUB_REPOSITORY_OWNER}.github.io}"
+          api_base_url="${VAR_API_BASE_URL:-https://kadence.barryph.com}"
+          site_url="${VAR_SITE_URL:-https://kadence.static.barryph.com}"
 
           {
-            echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
+            echo "PUBLIC_API_BASE_URL=${api_base_url}"
             echo "SITE_URL=${site_url}"
           } >> "$GITHUB_ENV"
 
-          echo "PUBLIC_API_BASE_URL=${VAR_API_BASE_URL}"
+          echo "PUBLIC_API_BASE_URL=${api_base_url}"
           echo "SITE_URL=${site_url}"
 
       - name: Build

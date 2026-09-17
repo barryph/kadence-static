@@ -134,8 +134,12 @@ the invalid-link state is easy to exercise:
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `PUBLIC_API_BASE_URL` | yes (build) | Base URL of the Kadence API, e.g. `https://api.kadence.app`. No trailing slash needed. |
-| `SITE_URL` | no | Public site URL used for `<link rel="canonical">` and Open Graph. Defaults to `https://barryph.github.io`. |
+| `PUBLIC_API_BASE_URL` | yes (build) | Base URL of the Kadence API. Production: `https://kadence.barryph.com`. No trailing slash needed. |
+| `SITE_URL` | no | Public site URL used for `<link rel="canonical">` and Open Graph. Production: `https://kadence.static.barryph.com`. |
+
+The site and the API are on **different origins** in production
+(`kadence.static.barryph.com` vs `kadence.barryph.com`), so the backend must
+allow the site origin via CORS.
 
 **`PUBLIC_*` variables are public.** Astro inlines them into the static bundle at
 build time, so they end up in the shipped JavaScript. Never put a credential,
@@ -194,7 +198,7 @@ detail, stack trace or PII can leak into the UI or a log line.
 
 The backend must allow the site's origin via its `CORS_ORIGINS` environment
 variable (`back-end/src/configure-app.ts`), e.g.
-`CORS_ORIGINS=https://barryph.github.io`.
+`CORS_ORIGINS=https://kadence.static.barryph.com`.
 
 ## Security model
 
@@ -271,33 +275,33 @@ Pages can serve it directly from an artifact.
 2. **Enable Pages** — *Settings → Pages → Build and deployment → Source:
    **GitHub Actions***.
 
-3. **Set the API URL** — *Settings → Secrets and variables → Actions →
-   Variables → New repository variable*:
+3. **Set the API URL (optional override)** — the workflow already defaults to
+   the production values below, so nothing is required for a standard deploy.
+   To point at a different backend, set a repository variable in *Settings →
+   Secrets and variables → Actions → Variables*:
 
-   | Variable | Required | Example |
+   | Variable | Required | Default |
    | --- | --- | --- |
-   | `PUBLIC_API_BASE_URL` | **yes** | `https://api.kadence.app` |
-   | `SITE_URL` | no | `https://barryph.github.io` (default) |
+   | `PUBLIC_API_BASE_URL` | no | `https://kadence.barryph.com` |
+   | `SITE_URL` | no | `https://kadence.static.barryph.com` |
 
-   The workflow **fails with a clear error** if `PUBLIC_API_BASE_URL` is unset —
-   a deployed site without it cannot submit anything, so failing loudly is
-   better than shipping it.
+   A build with no API URL at all (e.g. plain `pnpm run build` without `.env`)
+   cannot submit anything; the site surfaces a clear "misconfigured" message
+   rather than failing silently.
 
-   `SITE_URL` is derived from the repository automatically: it becomes
-   `https://<owner>.github.io`.
-
-4. **Allow the origin on the backend** — add the Pages origin to the API's
-   `CORS_ORIGINS`. That is `https://<owner>.github.io` (origins are scheme +
-   host + port, with no path).
+4. **Allow the origin on the backend** — add the site origin to the API's
+   `CORS_ORIGINS`: `https://kadence.static.barryph.com` (an origin is scheme +
+   host + port, with no path). Note this differs from the API host itself.
 
 ### Custom domain
 
-Set `SITE_URL=https://your.domain`, add a `public/CNAME` file
-containing the domain, and configure the DNS records GitHub documents.
+The site is served at `https://kadence.static.barryph.com`. That is pinned by
+`public/CNAME` (which GitHub Pages copies into the build) and by the default
+`SITE_URL` in `.github/workflows/deploy.yml`. To move it, change both, then
+configure the DNS records GitHub documents.
 
 The build always uses `/` as the base path, so the site must be served from the
-root of its domain — a custom domain or a user/organisation page
-(`https://<owner>.github.io`), not a repository sub-path.
+root of its domain — a custom domain, not a repository sub-path.
 
 ### Why it deploys cleanly
 
