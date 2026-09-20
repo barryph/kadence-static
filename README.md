@@ -23,7 +23,7 @@ user to sign in to the app.
 - [Brand and design provenance](#brand-and-design-provenance)
 - [Local development](#local-development)
 - [Configuration](#configuration)
-- [API contract](#api-contract)
+- [Backend integration](#backend-integration)
 - [Security model](#security-model)
 - [Testing](#testing)
 - [Deployment to GitHub Pages](#deployment-to-github-pages)
@@ -48,9 +48,9 @@ user to sign in to the app.
 5. **Deleted** — the token is `POST`ed to the confirm endpoint and, on success,
    the site shows *"Account deleted"*.
 
-Only transport-level failures (rate limiting, network problems, 5xx) produce an
-error state. A `4xx` on the request endpoint is deliberately treated as success
-so the endpoint cannot be used to enumerate accounts.
+Only transport-level failures (rate limiting, network problems, server errors)
+produce an error state. A rejection on the request endpoint is deliberately
+treated as success so the endpoint cannot be used to enumerate accounts.
 
 ## Privacy policy page
 
@@ -103,7 +103,7 @@ Requires Node ≥ 22 and pnpm (the pinned `packageManager`).
 ```bash
 pnpm install
 
-# Terminal 1 — mock backend (the real endpoints do not exist yet)
+# Terminal 1 — mock backend (so no real API is needed)
 pnpm run mock-api
 
 # Terminal 2 — dev server
@@ -151,54 +151,27 @@ loopback host so the site can be developed against a local backend; anything
 else is refused client-side with a generic error. URLs carrying credentials
 (`https://user:pass@host`) are rejected too.
 
-## API contract
+## Backend integration
 
-This site assumes two endpoints, defined in exactly one place —
-`src/lib/config.ts`:
+The site calls two public, unauthenticated endpoints on the Kadence API: one to
+request a deletion link for an email address, one to confirm deletion with the
+emailed token. The routes are defined in `src/lib/config.ts`; all transport and
+response handling lives in `src/lib/api.ts`.
 
-```http
-POST {PUBLIC_API_BASE_URL}/website/auth/account-deletion/request
-Content-Type: application/json
+The site reads only status codes, never a response body, so the request outcome
+is neutral and cannot reveal whether an account exists. The confirm token is
+sent in the request body, never a URL. Failures surface as one of three
+user-facing states: an unusable link, too many requests, or a temporary problem.
 
-{ "email": "user@example.com" }
-```
+What the backend must provide is in
+[`docs/backend-requirements.md`](docs/backend-requirements.md); the site's side
+of the integration is in
+[`docs/account-deletion-api.md`](docs/account-deletion-api.md). The backend
+documents its own implementation in
+`back-end/docs/external-account-deletion.md`.
 
-```http
-POST {PUBLIC_API_BASE_URL}/website/auth/account-deletion/confirm
-Content-Type: application/json
-
-{ "token": "…" }
-```
-
-> **The full specification for the backend team lives in
-> [`docs/account-deletion-api.md`](docs/account-deletion-api.md).** It covers the
-> request/response bodies, every status code and error code, token storage and
-> lifetime, email delivery, rate limiting, CORS, the required test matrix, and
-> an implementation skeleton using this repo's existing conventions. The summary
-> below is what the frontend relies on.
-
-> **Not implemented in the backend yet.** The current Kadence API only exposes
-> the in-app, session-authenticated `DELETE /auth/account`
-> (`back-end/src/modules/authentication/authentication.controller.ts`). When the
-> external routes land, update the two constants at the top of
-> `src/lib/config.ts`; `src/lib/api.ts` already isolates all transport, status
-> mapping and security behaviour.
-
-How responses are classified (`src/lib/api.ts`):
-
-| Status | Request endpoint | Confirm endpoint |
-| --- | --- | --- |
-| `2xx` | success state | deleted state |
-| `400`, `401`, `403`, `404`, `410`, `422` | **success state** (anti-enumeration) | "link is no longer valid" |
-| `429` | "Too many requests" + retry | "Too many requests" + retry |
-| `5xx`, network, timeout | "Something went wrong" + retry | "Something went wrong" + retry |
-
-The response body is never read: only the status code matters, so no backend
-detail, stack trace or PII can leak into the UI or a log line.
-
-The backend must allow the site's origin via its `CORS_ORIGINS` environment
-variable (`back-end/src/configure-app.ts`), e.g.
-`CORS_ORIGINS=https://accounts.kadence.barryph.com`.
+The site and API are on different origins in production, so the backend must
+allow the site's origin.
 
 ## Security model
 
@@ -207,7 +180,7 @@ ownership and authorizes the deletion. What this site guarantees:
 
 - The email address is never treated as proof of ownership.
 - The UI never reveals whether an account exists (identical copy for every
-  request outcome; `4xx` on the request endpoint is shown as success).
+  request outcome; a rejection on the request endpoint is shown as success).
 - No credentials or secrets exist in the frontend; no `PUBLIC_*` variable holds
   a secret.
 - The deletion token is treated as a credential:
@@ -289,9 +262,10 @@ Pages can serve it directly from an artifact.
    cannot submit anything; the site surfaces a clear "misconfigured" message
    rather than failing silently.
 
-4. **Allow the origin on the backend** — add the site origin to the API's
-   `CORS_ORIGINS`: `https://accounts.kadence.barryph.com` (an origin is scheme +
-   host + port, with no path). Note this differs from the API host itself.
+4. **Allow the origin on the backend** — the site origin
+   (`https://accounts.kadence.barryph.com`; scheme + host + port, no path) must
+   be allowed by the API's CORS configuration. Note this differs from the API
+   host itself.
 
 ### Custom domain
 
@@ -320,7 +294,8 @@ root of its domain — a custom domain, not a repository sub-path.
 │   ├── ci.yml                     # typecheck + tests on PRs
 │   └── deploy.yml                 # build + deploy to GitHub Pages on main
 ├── docs/
-│   └── account-deletion-api.md    # API contract for the backend team
+│   ├── backend-requirements.md    # plain-language backend requirements
+│   └── account-deletion-api.md    # the site's side of the integration
 ├── public/                        # favicons, OG image, robots.txt, .nojekyll
 ├── scripts/
 │   ├── e2e-smoke.mjs              # headless-Chromium end-to-end checks
@@ -379,17 +354,10 @@ together.
 
 ## Known follow-ups
 
-- **Backend endpoints are not implemented yet.** The request/confirm routes in
-  `src/lib/config.ts` are the agreed contract, specified in full in
-  [`docs/account-deletion-api.md`](docs/account-deletion-api.md). Note the token
-  input to the confirm endpoint must be a `POST` body (not a URL), which keeps
-  the token out of server access logs.
-- **Email delivery is a hard prerequisite.** The backend currently binds
-  `EMAIL_SENDER` to `NoopEmailSender`, which logs and discards. The endpoints can
-  be built and tested against it, but the feature does nothing for a real user
-  until a provider is wired in.
-- The real backend must enforce: single-use, short-lived tokens; rate limiting;
-  neutral responses for the request endpoint; and it must not report whether an
-  account exists.
+- **End-to-end coverage uses a mock.** `pnpm run test:e2e` runs against
+  `scripts/mock-api.mjs`, not a real backend. Before a release that changes the
+  flow, run the manual checks in
+  [`docs/account-deletion-api.md`](docs/account-deletion-api.md) against a
+  running backend.
 - Keep the Privacy Policy's Markdown and the version string in the app's own
   records in sync when the policy changes.

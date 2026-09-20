@@ -9,12 +9,9 @@
 /**
  * Backend path that starts the email-verified deletion flow.
  *
- * NOTE: the Kadence backend currently exposes only the in-app, session-
- * authenticated `DELETE /auth/account` endpoint. This external (post-
- * uninstall) flow is not implemented yet, so the paths below are the agreed
- * contract and live in exactly one place: change them here when the backend
- * ships its routes. Everything else in the site goes through the typed API
- * client in `api.ts` and is unaffected.
+ * The backend implements this route under `modules/account-management/`. The
+ * paths live here in exactly one place, so a route change is a one-file edit;
+ * everything else goes through the typed API client in `api.ts`.
  */
 export const ACCOUNT_DELETION_REQUEST_PATH = '/account/deletion-requests';
 

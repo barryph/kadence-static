@@ -2,8 +2,8 @@
 /**
  * Mock Kadence API for local development and end-to-end testing.
  *
- * The real backend does not implement the external deletion flow yet, so this
- * stub lets the site be exercised without one.
+ * Stub backend so the site can be exercised locally and in e2e without a real
+ * API or database.
  *
  * Run as a standalone dev server:
  *
