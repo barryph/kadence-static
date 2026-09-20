@@ -313,8 +313,8 @@ may otherwise require.
 We are happy to answer your questions, or process a rights request. Please
 reach out to us:
 
-- **Privacy contact:** codecompletelabs+privacy@gmail.com
-- **Support:** codecompletelabs+support@gmail.com
+- **Privacy contact:** privacy+codecompletelabs@gmail.com
+- **Support:** support+codecompletelabs@gmail.com
 
 For formal or rights-related correspondence, please mention "Privacy Policy /
 Request" in the subject line when you contact us.

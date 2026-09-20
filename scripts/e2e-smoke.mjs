@@ -630,7 +630,7 @@ try {
     );
     assert(
       await session.evaluate(
-        `document.querySelector('article.legal-doc').textContent.includes('codecompletelabs+privacy@gmail.com')`,
+        `document.querySelector('article.legal-doc').textContent.includes('privacy+codecompletelabs@gmail.com')`,
       ),
       'the contact address should be present',
     );
