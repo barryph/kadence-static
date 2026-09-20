@@ -5,8 +5,8 @@ import type { ApiConfig } from '../config';
 
 const config: ApiConfig = {
   baseUrl: 'https://api.kadence.test',
-  requestPath: '/website/auth/account-deletion/request',
-  confirmPath: '/website/auth/account-deletion/confirm',
+  requestPath: '/account/deletion-requests',
+  confirmPath: '/account/deletion-requests/confirm',
   timeoutMs: 1_000,
 };
 
@@ -98,7 +98,7 @@ describe('requestAccountDeletion', () => {
       RequestInit,
     ];
     expect(url).toBe(
-      'https://api.kadence.test/website/auth/account-deletion/request',
+      'https://api.kadence.test/account/deletion-requests',
     );
     expect(url).not.toContain(EMAIL);
     expect(init.method).toBe('POST');
@@ -157,7 +157,7 @@ describe('confirmAccountDeletion', () => {
       RequestInit,
     ];
     expect(url).toBe(
-      'https://api.kadence.test/website/auth/account-deletion/confirm',
+      'https://api.kadence.test/account/deletion-requests/confirm',
     );
     expect(url).not.toContain(TOKEN);
     expect(JSON.parse(String(init.body))).toEqual({ token: TOKEN });
@@ -203,11 +203,11 @@ describe('confirmAccountDeletion', () => {
 describe('credential hygiene', () => {
   it('never logs the email address or the deletion token', async () => {
     const spies = [
-      vi.spyOn(console, 'log').mockImplementation(() => {}),
-      vi.spyOn(console, 'info').mockImplementation(() => {}),
-      vi.spyOn(console, 'warn').mockImplementation(() => {}),
-      vi.spyOn(console, 'error').mockImplementation(() => {}),
-      vi.spyOn(console, 'debug').mockImplementation(() => {}),
+      vi.spyOn(console, 'log').mockImplementation(() => { }),
+      vi.spyOn(console, 'info').mockImplementation(() => { }),
+      vi.spyOn(console, 'warn').mockImplementation(() => { }),
+      vi.spyOn(console, 'error').mockImplementation(() => { }),
+      vi.spyOn(console, 'debug').mockImplementation(() => { }),
     ];
     mockFetch(500);
     const api = createAccountDeletionApi(config);

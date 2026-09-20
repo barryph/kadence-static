@@ -136,8 +136,7 @@ class CdpSession {
     });
     if (exceptionDetails) {
       throw new Error(
-        `evaluate failed: ${exceptionDetails.text} ${
-          exceptionDetails.exception?.description ?? ''
+        `evaluate failed: ${exceptionDetails.text} ${exceptionDetails.exception?.description ?? ''
         }`,
       );
     }
@@ -153,7 +152,7 @@ class CdpSession {
 
   async waitFor(expression, { timeoutMs = 5_000, label = expression } = {}) {
     const deadline = Date.now() + timeoutMs;
-    for (;;) {
+    for (; ;) {
       if (await this.evaluate(expression)) return;
       if (Date.now() > deadline) throw new Error(`Timed out waiting for: ${label}`);
       await sleep(40);
@@ -444,7 +443,7 @@ try {
     assertEqual(confirmRequests.length, 1, 'expected exactly one confirm request');
     assertEqual(
       confirmRequests[0].pathname,
-      '/website/auth/account-deletion/confirm',
+      '/account/deletion-requests/confirm',
       'unexpected endpoint',
     );
     assertEqual(confirmRequests[0].body.token, VALID_TOKEN, 'token should be in the body');

@@ -28,8 +28,8 @@ items describe the design we suggest but that the backend team owns.
 All endpoints consumed by this site are namespaced under the `/website/`
 prefix:
 
-- `POST /website/auth/account-deletion/request` — start the email-verified flow.
-- `POST /website/auth/account-deletion/confirm` — consume the token and delete.
+- `POST /account/deletion-requests` — start the email-verified flow.
+- `POST /account/deletion-requests/confirm` — consume the token and delete.
 
 The prefix is part of the contract and is **not optional**: the backend MUST
 NOT expose either route without it. It groups everything the static site calls
@@ -52,7 +52,7 @@ a user who has uninstalled the app cannot present a session cookie.
 ## 2. Endpoint 1 — request a deletion email
 
 ```http
-POST /website/auth/account-deletion/request
+POST /account/deletion-requests
 Content-Type: application/json
 Accept: application/json
 
@@ -131,7 +131,7 @@ consumers and for the Swagger examples.
 ## 3. Endpoint 2 — confirm and delete
 
 ```http
-POST /website/auth/account-deletion/confirm
+POST /account/deletion-requests/confirm
 Content-Type: application/json
 Accept: application/json
 
@@ -396,7 +396,7 @@ The site is served from a different origin than the API, and a
 1. The Pages origin MUST be listed in the backend's `CORS_ORIGINS`
    (`configure-app.ts`). For a project site that is
    `https://<owner>.github.io` — scheme + host only, no path.
-2. `OPTIONS /website/auth/account-deletion/*` MUST return `204` with
+2. `OPTIONS /account/deletion-requests*` MUST return `204` with
    `Access-Control-Allow-Headers: content-type`. The `cors` package already does
    this; verify it is not bypassed by a guard.
 3. The site sends `credentials: 'omit'`, so no cookie handling is required. The
@@ -441,7 +441,7 @@ features under `src/modules/<feature>/` split into `domain/`, `repos/`,
 ```text
 src/modules/website/
 ├── website.module.ts                        # new NestJS module
-├── account-deletion.controller.ts           # @Controller('website/auth/account-deletion')
+├── account-deletion.controller.ts           # @Controller('account/deletion-requests')
 ├── dtos/
 │   ├── account-deletion-request.dto.ts      # { email }
 │   └── account-deletion-confirm.dto.ts      # { token }
@@ -514,7 +514,7 @@ Controller skeleton, matching the existing decorators. It assumes
 authentication module) are in scope:
 
 ```ts
-@Controller('website/auth/account-deletion')
+@Controller('account/deletion-requests')
 export class AccountDeletionController {
   constructor(
     private readonly requestService: AccountDeletionRequestService,
@@ -629,7 +629,7 @@ the feature code in `src/modules/website/` (the shared
   service, repository or controller logs the address, and that trace MUST be
   removed when a real sender is wired in.
 - The token never appears in a response body.
-- Both routes resolve only under `/website/auth/account-deletion/…`; a request
+- Both routes resolve only under `/account/deletion-requests`; a request
   to the unprefixed `/auth/account-deletion/…` → `404`.
 
 ---
@@ -660,7 +660,7 @@ PUBLIC_API_BASE_URL=http://localhost:3000 pnpm run dev
    → identical neutral panel, and the issued token belongs to the existing
    account rather than creating or targeting a second one.
 8. Call the unprefixed `/auth/account-deletion/request` directly → `404`; only
-   `/website/auth/account-deletion/request` is routed.
+   `/account/deletion-requests` is routed.
 
 `pnpm run test:e2e` in `kadence-static` covers steps 1, 3, 4, 5 and 6 against
 the bundled mock API, so only the data assertions in step 3 need a real

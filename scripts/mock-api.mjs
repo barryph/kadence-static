@@ -150,7 +150,7 @@ async function startStandalone() {
 
   console.log(`Kadence mock API listening on http://localhost:${port} (mode: ${mode})`);
   console.log(
-    'Routes: POST /website/auth/account-deletion/request, POST /website/auth/account-deletion/confirm',
+    'Routes: POST /account/deletion-requests/request, POST /account/deletion-requests/confirm',
   );
 
   for (const signal of ['SIGINT', 'SIGTERM']) {
