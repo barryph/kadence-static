@@ -1,8 +1,4 @@
 ---
-import '@fontsource/ibm-plex-mono/latin-400.css';
-import '@fontsource/ibm-plex-mono/latin-500.css';
-import '@fontsource/ibm-plex-mono/latin-600.css';
-import '@fontsource/ibm-plex-mono/latin-700.css';
 import '../styles/global.css';
 
 import Footer from '../components/Footer.astro';
@@ -19,12 +15,12 @@ interface Props {
   noindex?: boolean;
   /**
    * Extra class on `<body>`, letting a page opt into its own presentation
-   * without touching the shared app theme (see the Privacy Policy page).
+   * without touching the shared theme (see the Privacy Policy page).
    */
   bodyClass?: string;
-  /** Browser UI colour (address bar). Defaults to the app's dark background. */
+  /** Browser UI colour (address bar). Defaults to the light page. */
   themeColor?: string;
-  /** `color-scheme` for the page; defaults to the app's dark theme. */
+  /** `color-scheme` for the page; defaults to the site's light theme. */
   colorScheme?: 'dark' | 'light';
 }
 
@@ -34,8 +30,8 @@ const {
   path,
   noindex = false,
   bodyClass,
-  themeColor = '#050711',
-  colorScheme = 'dark',
+  themeColor = '#ffffff',
+  colorScheme = 'light',
 } = Astro.props;
 
 // `site` comes from astro.config.mjs (SITE_URL). The fallback only matters if

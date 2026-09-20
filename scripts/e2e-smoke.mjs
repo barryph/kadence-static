@@ -511,12 +511,21 @@ try {
 
   console.log('\nLayout and accessibility');
 
-  await check('loads the Kadence typeface', async () => {
+  await check('uses the same light theme as the policy page', async () => {
     await session.goto(requestUrl);
-    const loaded = await session.evaluate(
-      `(async () => { await document.fonts.ready; return document.fonts.check('16px "IBM Plex Mono"'); })()`,
-    );
-    assert(loaded, 'IBM Plex Mono did not load');
+    const theme = await session.evaluate(`(() => {
+      const style = getComputedStyle(document.body);
+      return {
+        bg: style.backgroundColor,
+        fg: style.color,
+        font: style.fontFamily,
+        lineHeight: parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+      };
+    })()`);
+    assertEqual(theme.bg, 'rgb(255, 255, 255)', 'expected a white background');
+    assertEqual(theme.fg, 'rgb(17, 17, 17)', 'expected near-black text');
+    assert(!/mono/i.test(theme.font), 'body copy should use the system sans stack');
+    assert(theme.lineHeight >= 1.5, `body line-height is only ${theme.lineHeight}`);
   });
 
   await check('exposes semantic landmarks and an associated label', async () => {
@@ -646,7 +655,7 @@ try {
     })()`);
     assertEqual(theme.bg, 'rgb(255, 255, 255)', 'expected a white background');
     assertEqual(theme.fg, 'rgb(17, 17, 17)', 'expected near-black text');
-    assert(!/mono/i.test(theme.font), 'body copy should not use the app mono font');
+    assert(!/mono/i.test(theme.font), 'body copy should not use a monospace font');
     assert(theme.lineHeight >= 1.5, `body line-height is only ${theme.lineHeight}`);
   });
 

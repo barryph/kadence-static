@@ -63,11 +63,11 @@ be linked from the App stores and from inside the app.
 - `src/pages/privacy-policy.astro` renders it with **Astro's built-in Markdown
   pipeline**, so there is no Markdown dependency to maintain. The page adds only
   presentation.
-- Because a legal document is read rather than operated, the page opts into its
-  own **document theme** (via `bodyClass="document-page"` on `BaseLayout`): a
-  white background, black text, a proportional system font, a ~68-character
-  measure, generous line height, and underline links. It keeps the shared
-  header, footer and skip link so it still reads as Kadence.
+- The whole site shares one light, document-style theme (see `global.css`): a
+  white background, near-black text, a proportional system font, generous line
+  height and underline links. The policy page opts into a wider column and a
+  ~68-character measure on top of it, and keeps the shared header, footer and
+  skip link so it still reads as Kadence.
 - Accessibility: semantic landmarks, one `h1` with no skipped heading levels,
   dark-on-white contrast throughout, a dark-blue focus ring (the app's cyan ring
   is too low-contrast on white), and a table that scrolls horizontally on small
@@ -75,16 +75,16 @@ be linked from the App stores and from inside the app.
 
 ## Brand and design provenance
 
-This site is meant to look like the product, so it reuses the app's real design
-assets rather than approximations:
+Every page shares the Privacy Policy page's light, document-style theme rather
+than the app's dark UI, so the site stays consistent and easy to read. It still
+reuses the app's real design assets where they carry meaning:
 
 | Asset | Source |
 | --- | --- |
-| Colours, surfaces, input and button styles | `front-end/constants/theme.ts`, `front-end/components/base/{button,input}.tsx` |
-| App background `#050711`, splash `#000923` | `front-end/app.json` |
-| Brand blue `#0072ff`, cyan `#08d8ff`, destructive `#c62828` | `front-end/constants/theme.ts`, `front-end/components/auth/delete-account-modal.tsx` |
-| Typeface **IBM Plex Mono** (400/500/600/700, latin subset) | `@fontsource/ibm-plex-mono`, self-hosted — no external font request |
-| Header wordmark (`Kad` + faint `ence`) | `front-end/components/logo.tsx` |
+| Destructive red `#c62828` | `front-end/constants/theme.ts`, `front-end/components/auth/delete-account-modal.tsx` |
+| Action blue `#0a4d9c` (buttons and links) | Privacy Policy page reference design |
+| Body type: proportional system font stack | Privacy Policy page reference design |
+| Header wordmark (`Kad` + grey `ence`) | `front-end/components/logo.tsx` |
 | Favicon / touch icon / OG card mark | `front-end/assets/images/icon-foreground.png` |
 | Error and identity copy | `front-end/components/auth/delete-account-modal.tsx`, `PRIVACY_POLICY.md` |
 
@@ -244,10 +244,10 @@ pnpm run check       # typecheck + unit tests + build
 - **`pnpm run test:e2e`** builds the site against the mock API and drives the
   *built pages* in headless Chromium: the request flow, the whole confirmation
   flow, token-in-body-not-URL, token-absent-from-DOM, no horizontal overflow at
-  320–1280 px, ≥44 px touch targets, ≥16 px input font size, and a real
-  assertion that the Kadence typeface loads. It also covers the Privacy Policy
-  page — Markdown rendering, one `h1`, no skipped heading levels, a white
-  background with near-black text and a non-mono body font, no horizontal
+  320–1280 px, ≥44 px touch targets, ≥16 px input font size, and an assertion
+  that the request page shares the policy page's light theme. It also covers the
+  Privacy Policy page — Markdown rendering, one `h1`, no skipped heading levels,
+  a white background with near-black text and a non-mono body font, no horizontal
   overflow at 320–1280 px, and the footer link. It needs a Chromium/Chrome
   binary (`CHROME_BIN` overrides detection).
 
@@ -332,7 +332,7 @@ root of its domain — a custom domain, not a repository sub-path.
 │   ├── components/                # Header, Footer, Icon
 │   ├── content/
 │   │   └── privacy-policy.md      # Privacy Policy text (plain Markdown)
-│   ├── layouts/BaseLayout.astro   # <head>, metadata, fonts, page shell
+│   ├── layouts/BaseLayout.astro   # <head>, metadata, page shell
 │   ├── lib/
 │   │   ├── api.ts                 # typed client — the only network code
 │   │   ├── config.ts              # endpoint paths + base-URL policy
@@ -366,10 +366,11 @@ together.
   the inactive panels use `hidden`, so they leave the accessibility tree.
 - State is never conveyed by colour alone — every state has an icon **and** text.
 - Visible `:focus-visible` outlines on all interactive elements, 3:1+ contrast
-  against the dark surface.
-- The Privacy Policy page uses its own light document theme: dark text on white,
-  a proportional font and a comfortable measure, a dark-blue focus ring for
-  contrast on white, and a heading structure with no skipped levels.
+  against the white surface.
+- One light theme across the site: dark text on white, a proportional font, a
+  dark-blue focus ring for contrast on white, and heading structures with no
+  skipped levels. The Privacy Policy page adds only a wider measure for
+  long-form reading.
 - Mobile-first layout with `env(safe-area-inset-*)` padding, ≥44 px touch
   targets, 16 px form-input text (prevents iOS zoom-on-focus), and no horizontal
   overflow from 320 px upwards.
